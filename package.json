@@ -1,0 +1,26 @@
+{
+  "name": "bus-cover",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "bus-cover": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "install-local": "npx tsc && npm i -g ."
+  },
+  "keywords": [],
+  "author": "22",
+  "license": "ISC",
+  "description": "Get cover from JavBus",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "figlet": "^1.7.0",
+    "puppeteer": "^23.1.0"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.8",
+    "@types/node": "^22.4.0",
+    "typescript": "^5.5.4"
+  }
+}
