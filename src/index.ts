@@ -104,6 +104,8 @@ const run = async () => {
     '/pics/sample/',
     '/pics/thumb/',
     'dmm.co.jp',
+    'jads.co',
+    '/ads/',
   ]
 
   page.on('request', (request) => {
