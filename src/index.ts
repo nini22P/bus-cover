@@ -6,6 +6,12 @@ import * as puppeteer from 'puppeteer'
 import { promisify } from 'util'
 import figlet from "figlet"
 
+interface File {
+  name: string,
+  isDir: boolean,
+  extName: string,
+}
+
 const videoExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv']
 const sleep = promisify(setTimeout)
 
@@ -13,7 +19,7 @@ const findDir = async (dirPath: string) => {
   try {
     const files = await fs.promises.readdir(dirPath)
 
-    const results = await Promise.all(files.map(async (file) => {
+    const results: File[] = await Promise.all(files.map(async (file) => {
       const filePath = path.join(dirPath, file)
       const stats = await fs.promises.stat(filePath)
 
@@ -26,6 +32,15 @@ const findDir = async (dirPath: string) => {
 
     return results
       .filter(file => file.name.includes('-') && (file.isDir || videoExtensions.includes(file.extName)))
+      .map(file => ({ ...file, name: [file.name.split('-')[0], file.name.split('-')[1].split(' ')[0]].join('-') }))
+      .reduce((accumulator: File[], current: File) => {
+        const x = accumulator.find(item => item.name === current.name)
+        if (!x) {
+          return accumulator.concat([current])
+        } else {
+          return accumulator
+        }
+      }, [])
       .sort((a, b) => {
         const nameA = a.name.toUpperCase()
         const nameB = b.name.toUpperCase()
@@ -80,6 +95,27 @@ const run = async () => {
 
   const pages = await browser.pages()
   const page = pages[0]
+
+  await page.setRequestInterception(true)
+
+  const blockedUrls = [
+    '.gif',
+    '/forum/',
+    '/pics/sample/',
+    '/pics/thumb/',
+    'dmm.co.jp',
+  ]
+
+  page.on('request', (request) => {
+    const url = request.url()
+    const shouldAbort = blockedUrls.some(blockedUrl => url.includes(blockedUrl) || url.endsWith(blockedUrl))
+
+    if (shouldAbort) {
+      request.abort()
+    } else {
+      request.continue()
+    }
+  })
 
   try {
     const files = await findDir('./')

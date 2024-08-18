@@ -7,7 +7,8 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "install-local": "npx tsc && npm i -g ."
+    "build:bun": "npx bun build ./src/index.ts --compile --minify --outfile ./dist/bus-cover",
+    "install:local": "npx tsc && npm i -g ."
   },
   "keywords": [],
   "author": "22",
