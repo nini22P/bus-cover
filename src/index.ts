@@ -31,7 +31,7 @@ const findDir = async (dirPath: string) => {
     }))
 
     return results
-      .filter(file => file.name.includes('-') && (file.isDir || videoExtensions.includes(file.extName)))
+      .filter(file => file.name.includes('-') && (file.isDir || videoExtensions.includes(file.extName.toLocaleLowerCase())))
       .map(file => ({ ...file, name: [file.name.split('-')[0], file.name.split('-')[1].split(' ')[0]].join('-') }))
       .reduce((accumulator: File[], current: File) => {
         const x = accumulator.find(item => item.name === current.name)
