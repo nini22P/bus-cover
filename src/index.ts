@@ -5,6 +5,7 @@ import path from 'path'
 import * as puppeteer from 'puppeteer'
 import { promisify } from 'util'
 import figlet from "figlet"
+import { Command } from 'commander'
 
 interface File {
   name: string,
@@ -54,7 +55,7 @@ const findDir = async (dirPath: string) => {
         return 0
       })
   } catch (err) {
-    console.error('无法读取此目录', err)
+    console.error('Not read dir', err)
     return []
   }
 }
@@ -86,11 +87,11 @@ const getCover = async (page: puppeteer.Page, id: string, savePath: string) => {
   }
 }
 
-const run = async () => {
+const run = async (debug: boolean) => {
   console.log(figlet.textSync("Bus Cover"))
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: !debug,
   })
 
   const pages = await browser.pages()
@@ -126,16 +127,16 @@ const run = async () => {
       const id = file.isDir ? file.name : path.basename(file.name, path.extname(file.name))
       const savePath = file.isDir ? `./${file.name}/${id}.jpg` : `./${id}.jpg`
       if (fs.existsSync(savePath)) {
-        console.log(`${index + 1} / ${files.length} 跳过获取封面：${id}`)
+        console.log(`${index + 1} / ${files.length} Skipped: ${id}`)
       } else {
         const result = await getCover(page, id, savePath)
         if (result) {
-          console.log(`${index + 1} / ${files.length} 获取封面成功：${id}`)
+          console.log(`${index + 1} / ${files.length} Success: ${id}`)
           if (index < files.length - 1) {
             await sleep(10000)
           }
         } else {
-          console.log(`${index + 1} / ${files.length} 获取封面失败：${id}`)
+          console.log(`${index + 1} / ${files.length} Failed: ${id}`)
           if (index < files.length - 1) {
             await sleep(10000)
           }
@@ -143,10 +144,20 @@ const run = async () => {
       }
     }
   } catch (err) {
-    console.error('获取文件时出现错误:', err)
+    console.error('Error: ', err)
   } finally {
     await browser.close()
   }
 }
 
-run()
+const program = new Command()
+
+program
+  .version('1.0.0')
+  .option('-d, --debug', 'Run in debug mode (non-headless)')
+  .parse(process.argv)
+
+const options = program.opts()
+const debug = options.debug || false
+
+run(debug)
